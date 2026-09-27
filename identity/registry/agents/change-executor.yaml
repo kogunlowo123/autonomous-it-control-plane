@@ -1,0 +1,13 @@
+agent_id: "00000000-0000-0000-0000-000000000002"
+agent_type: change-executor
+tier: T2
+allowed_actions:
+  - rag_search
+  - runbook_execute
+  - change_submit
+  - ticket_create
+  - session.read
+  - approval.read
+token_ttl_seconds: 1800
+max_budget_usd: 10.0
+tenant_id: null

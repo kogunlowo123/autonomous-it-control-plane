@@ -1,0 +1,39 @@
+---
+# Agent Guardrail Policies
+# These policies are evaluated before agent actions.
+
+input_screening:
+  enabled: true
+  max_input_length: 50000
+  block_prompt_injection: true
+  block_dangerous_code: true
+
+grounding:
+  enabled: true
+  min_overlap_score: 0.05
+  required_sources: 1
+
+citation_validation:
+  enabled: true
+  fail_on_invalid_citations: false  # Warn but don't block
+
+output_filtering:
+  enabled: true
+  block_pii: true
+  pii_categories:
+    - email
+    - ssn
+    - credit_card
+    - phone_number
+
+escalation:
+  confidence_threshold: 0.85
+  p1_confidence_threshold: 0.95
+  dangerous_keywords:
+    - "rm -rf"
+    - "drop table"
+    - "drop database"
+    - "format disk"
+    - "wipe"
+    - "truncate"
+    - "delete all"

@@ -1,0 +1,79 @@
+# Sync wave ordering for ArgoCD app-of-apps deployments
+# Wave -2: Infrastructure (namespaces, RBAC, secrets operators)
+# Wave -1: Data layer (Aurora, OpenSearch, SQS via External Secrets)
+# Wave  0: Core platform (OPA, OTEL collector)
+# Wave  1: Application services (api, agent-runtime)
+# Wave  2: Observability (Grafana dashboards)
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: itsm-system-namespaces
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/kogunlowo123/autonomous-it-control-plane.git
+    targetRevision: main
+    path: deploy/k8s/namespaces
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: itsm-api
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/kogunlowo123/autonomous-it-control-plane.git
+    targetRevision: main
+    path: deploy/helm/api
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: itsm-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: itsm-agent-runtime
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/kogunlowo123/autonomous-it-control-plane.git
+    targetRevision: main
+    path: deploy/helm/agent-runtime
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: itsm-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

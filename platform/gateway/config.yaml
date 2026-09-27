@@ -1,0 +1,25 @@
+gateway:
+  listen: "0.0.0.0:8080"
+  read_timeout_seconds: 30
+  write_timeout_seconds: 60
+  idle_timeout_seconds: 120
+
+providers:
+  bedrock:
+    region: us-east-1
+    default_model: anthropic.claude-3-sonnet-20240229-v1:0
+    max_retries: 3
+    retry_delay_ms: 1000
+    timeout_seconds: 60
+
+budget:
+  default_max_tokens_per_request: 4096
+  default_max_cost_usd_per_request: 0.50
+  daily_limit_usd_per_tenant: 100.0
+  alert_threshold_pct: 80
+
+audit:
+  enabled: true
+  log_prompts: false
+  log_completions: false
+  log_metadata: true

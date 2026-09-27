@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentProfile",
+  "type": "object",
+  "required": ["name", "version", "agent_type", "capabilities", "tier"],
+  "properties": {
+    "name": { "type": "string", "description": "Unique agent name" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "agent_type": {
+      "type": "string",
+      "enum": ["itsm-resolver", "change-executor", "incident-manager"]
+    },
+    "tier": {
+      "type": "string",
+      "enum": ["T1", "T2", "T3"],
+      "description": "Maximum change tier this agent can operate"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of tool names this agent is authorized to use"
+    },
+    "model_id": { "type": "string" },
+    "max_iterations": { "type": "integer", "minimum": 1, "maximum": 50 },
+    "confidence_threshold": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+  },
+  "additionalProperties": false
+}

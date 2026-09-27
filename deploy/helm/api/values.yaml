@@ -1,0 +1,71 @@
+replicaCount: 2
+
+image:
+  repository: ""  # set to your ECR URI
+  pullPolicy: IfNotPresent
+  tag: "0.1.0"
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+serviceAccount:
+  create: true
+  annotations: {}  # add eks.amazonaws.com/role-arn for IRSA
+
+env:
+  LOG_LEVEL: info
+  AWS_REGION: us-east-1
+
+secretRefs:
+  - name: api-secrets
+    keys:
+      - DATABASE_URL
+      - JWT_SECRET_KEY
+      - OPA_URL
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 30
+
+readinessProbe:
+  httpGet:
+    path: /readiness
+    port: 8000
+  initialDelaySeconds: 5
+  periodSeconds: 10

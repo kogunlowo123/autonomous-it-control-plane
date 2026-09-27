@@ -1,0 +1,31 @@
+title: Runbook Abuse — Dangerous Operations
+id: 9b2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e
+status: stable
+description: |
+  Detects when an agent attempts to execute runbook steps containing
+  dangerous operations (rm -rf, DROP TABLE, format disk, etc.).
+  This may indicate prompt injection or a compromised runbook.
+author: kogunlowo123
+date: 2024/01/01
+tags:
+  - attack.impact
+  - attack.T1485
+  - itsm.runbook_execution
+  - autonomous_it.dangerous_operation
+logsource:
+  product: autonomous-it-control-plane
+  service: agent-runtime
+detection:
+  selection:
+    EventType: "runbook.dangerous_operation_blocked"
+  condition: selection
+falsepositives:
+  - Legitimate runbooks that include destructive cleanup operations
+    (these should be pre-approved and flagged before agent execution)
+level: critical
+fields:
+  - incident_id
+  - agent_id
+  - step_content
+  - dangerous_keyword
+  - timestamp

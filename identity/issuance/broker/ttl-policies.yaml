@@ -1,0 +1,15 @@
+ttl_policies:
+  T1:
+    token_ttl_seconds: 3600
+    description: "Standard change tier — 1 hour token lifetime"
+  T2:
+    token_ttl_seconds: 1800
+    description: "Elevated change tier — 30 minute token lifetime"
+  T3:
+    token_ttl_seconds: 900
+    description: "Emergency change tier — 15 minute token lifetime"
+
+revocation:
+  check_interval_seconds: 60
+  storage_backend: postgresql
+  revocation_table: identity.revoked_tokens

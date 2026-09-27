@@ -1,0 +1,185 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install ruff
+        run: uv tool install ruff
+
+      - name: Run ruff check
+        run: ruff check services/ tests/ platform/ evals/ --output-format=github
+
+      - name: Run ruff format check
+        run: ruff format --check services/ tests/ platform/ evals/
+
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
+
+      - name: Install mypy and stubs
+        run: uv tool install mypy
+
+      - name: Install service dependencies
+        run: |
+          cd services/api && uv sync --all-groups
+          cd ../../services/agent-runtime && uv sync --all-groups
+          cd ../../services/rag-core && uv sync --all-groups
+
+      - name: Run mypy on api
+        run: cd services/api && uv run mypy src/ --ignore-missing-imports || true
+
+      - name: Run mypy on agent-runtime
+        run: cd services/agent-runtime && uv run mypy src/ --ignore-missing-imports || true
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
+
+      - name: Install test dependencies
+        run: |
+          uv pip install --system pytest pytest-asyncio httpx pydantic pydantic-settings
+
+      - name: Run unit tests
+        run: |
+          pytest tests/unit/ -v --tb=short
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/test_db"
+          AWS_REGION: "us-east-1"
+          JWT_SECRET_KEY: "test-secret-key-for-ci"
+          JWT_ALGORITHM: "HS256"
+          OPA_URL: "http://localhost:8181"
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: itsm
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: itsm_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      opensearch:
+        image: opensearchproject/opensearch:2.12.0
+        env:
+          discovery.type: single-node
+          DISABLE_SECURITY_PLUGIN: "true"
+        ports:
+          - 9200:9200
+        options: >-
+          --health-cmd "curl -sf http://localhost:9200/_cluster/health"
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 5
+          --health-start-period 60s
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system pytest pytest-asyncio httpx pydantic pydantic-settings \
+            psycopg2-binary fastapi uvicorn boto3 botocore PyJWT cryptography \
+            opentelemetry-sdk opentelemetry-instrumentation-fastapi slowapi
+
+      - name: Run integration tests
+        run: pytest tests/integration/ -v --tb=short
+        env:
+          DATABASE_URL: "postgresql://itsm:password@localhost:5432/itsm_db"
+          AWS_REGION: "us-east-1"
+          JWT_SECRET_KEY: "test-secret-key-for-ci"
+          JWT_ALGORITHM: "HS256"
+          OPENSEARCH_URL: "http://localhost:9200"
+          OPA_URL: "http://localhost:8181"
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: pip install bandit safety
+
+      - name: Run bandit
+        run: bandit -r services/ -ll --format sarif -o bandit-results.sarif || true
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: bandit-results.sarif
+        continue-on-error: true
+
+      - name: Run safety check
+        run: safety check --full-report || true

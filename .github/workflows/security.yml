@@ -1,0 +1,102 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"  # Weekly Monday 6am UTC
+  workflow_dispatch:
+
+jobs:
+  trivy-scan:
+    name: Trivy Container Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API image for scanning
+        run: docker build -t autonomous-it-api:scan services/api/
+
+      - name: Run Trivy on API image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "autonomous-it-api:scan"
+          format: "sarif"
+          output: "trivy-api.sarif"
+          severity: "CRITICAL,HIGH"
+          exit-code: "0"
+
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-api.sarif
+        continue-on-error: true
+
+  checkov-scan:
+    name: Checkov IaC Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Checkov on Terraform
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infra/
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov.sarif
+          soft_fail: true
+
+      - name: Upload Checkov SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: checkov.sarif
+        continue-on-error: true
+
+  bandit-scan:
+    name: Bandit Python SAST
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install bandit
+        run: pip install bandit[sarif]
+
+      - name: Run bandit
+        run: |
+          bandit -r services/ -ll --format sarif -o bandit.sarif
+        continue-on-error: true
+
+      - name: Upload Bandit SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: bandit.sarif
+        continue-on-error: true
+
+  semgrep-scan:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: |
+          semgrep scan \
+            --config=p/python \
+            --config=p/secrets \
+            --sarif \
+            --output=semgrep.sarif \
+            services/ || true
+
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+        continue-on-error: true

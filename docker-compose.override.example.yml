@@ -1,0 +1,29 @@
+version: "3.9"
+
+# Copy this file to docker-compose.override.yml to enable local development overrides.
+# This file adds hot-reload, debug ports, and volume mounts for development.
+
+services:
+  api:
+    build:
+      target: development
+    volumes:
+      - ./services/api/src:/app/src:ro
+    environment:
+      - API_DEBUG=true
+      - LOG_LEVEL=DEBUG
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  agent-runtime:
+    volumes:
+      - ./services/agent-runtime/src:/app/src:ro
+    environment:
+      - LOG_LEVEL=DEBUG
+
+  postgres:
+    ports:
+      - "5432:5432"
+
+  opensearch:
+    environment:
+      - OPENSEARCH_JAVA_OPTS=-Xms256m -Xmx256m

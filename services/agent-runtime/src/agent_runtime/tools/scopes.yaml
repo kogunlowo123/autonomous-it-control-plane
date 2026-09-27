@@ -1,0 +1,23 @@
+# Tool permission scopes — defines which agent tiers can access which tools
+scopes:
+  rag_search:
+    description: "Search runbook knowledge base via hybrid retrieval"
+    allowed_tiers: [T1, T2, T3]
+    read_only: true
+
+  runbook_execute:
+    description: "Execute a validated runbook step"
+    allowed_tiers: [T1, T2, T3]
+    requires_approval_for: [T2, T3]
+    read_only: false
+
+  ticket_create:
+    description: "Create or update an ITSM ticket"
+    allowed_tiers: [T1, T2, T3]
+    read_only: false
+
+  change_submit:
+    description: "Submit a change request for approval"
+    allowed_tiers: [T2, T3]
+    requires_approval_for: [T2, T3]
+    read_only: false

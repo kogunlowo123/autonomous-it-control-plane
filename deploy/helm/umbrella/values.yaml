@@ -1,0 +1,15 @@
+global:
+  imageRegistry: ""
+  awsRegion: us-east-1
+
+api:
+  replicaCount: 2
+  image:
+    repository: ""
+    tag: "0.1.0"
+
+agent-runtime:
+  replicaCount: 1
+  image:
+    repository: ""
+    tag: "0.1.0"

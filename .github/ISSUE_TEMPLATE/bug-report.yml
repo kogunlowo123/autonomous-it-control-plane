@@ -1,0 +1,76 @@
+name: Bug Report
+description: Report a bug in the Autonomous IT Control Plane
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill out all fields to help us diagnose the issue.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - API Service
+        - ITSM Resolver Agent
+        - Change Executor Agent
+        - Incident Manager Agent
+        - RAG Core
+        - Infrastructure (Terraform)
+        - CI/CD
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "e.g., dev, staging, prod, local docker-compose"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python Version
+      placeholder: "e.g., 3.12.3"
+
+  - type: input
+    id: version
+    attributes:
+      label: Platform Version
+      placeholder: "e.g., 0.1.0"
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Submit change request with...
+        2. Check status...
+        3. Observe error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      render: shell
+      placeholder: "Paste relevant log output here (redact any secrets or PII)"

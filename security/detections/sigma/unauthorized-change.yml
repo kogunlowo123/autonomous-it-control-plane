@@ -1,0 +1,41 @@
+title: Unauthorized Change Execution Attempt
+id: 8a1f2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c
+status: stable
+description: |
+  Detects attempts to execute a change without a valid approval record.
+  This may indicate a bypass of the approval gate or a misconfigured agent.
+references:
+  - https://github.com/kogunlowo123/autonomous-it-control-plane/docs/adr/0001-human-gate-t2.md
+author: kogunlowo123
+date: 2024/01/01
+tags:
+  - attack.privilege_escalation
+  - attack.T1548
+  - itsm.change_management
+  - autonomous_it.policy_violation
+logsource:
+  product: autonomous-it-control-plane
+  service: api
+detection:
+  selection:
+    EventType: "change.execution_attempt"
+    approval_status:
+      - "pending"
+      - "denied"
+      - "expired"
+      - null
+    tier:
+      - "T2"
+      - "T3"
+  condition: selection
+falsepositives:
+  - T1 changes which are auto-approved and do not require explicit approval
+  - Test environments with approval gates disabled
+level: high
+fields:
+  - change_id
+  - tier
+  - requestor
+  - approval_status
+  - timestamp
+  - source_ip

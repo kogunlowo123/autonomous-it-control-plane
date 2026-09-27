@@ -1,0 +1,36 @@
+agents:
+  - name: itsm-resolver
+    version: "1.0.0"
+    agent_type: itsm-resolver
+    tier: T1
+    capabilities:
+      - rag_search
+      - ticket_create
+    model_id: bedrock/anthropic.claude-3-sonnet-20240229-v1:0
+    max_iterations: 10
+    confidence_threshold: 0.85
+
+  - name: change-executor
+    version: "1.0.0"
+    agent_type: change-executor
+    tier: T2
+    capabilities:
+      - rag_search
+      - runbook_execute
+      - change_submit
+      - ticket_create
+    model_id: bedrock/anthropic.claude-3-sonnet-20240229-v1:0
+    max_iterations: 15
+    confidence_threshold: 0.90
+
+  - name: incident-manager
+    version: "1.0.0"
+    agent_type: incident-manager
+    tier: T1
+    capabilities:
+      - rag_search
+      - ticket_create
+      - runbook_execute
+    model_id: bedrock/anthropic.claude-3-sonnet-20240229-v1:0
+    max_iterations: 10
+    confidence_threshold: 0.85

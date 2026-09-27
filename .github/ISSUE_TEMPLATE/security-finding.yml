@@ -1,0 +1,49 @@
+name: Security Finding
+description: Report a non-critical security finding (use private reporting for vulnerabilities)
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **WARNING**: For actual security vulnerabilities, use private vulnerability reporting.
+        > This form is for non-critical security improvements and hardening suggestions only.
+        > See [SECURITY.md](../SECURITY.md) for private reporting instructions.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Low - Hardening suggestion
+        - Informational - Best practice improvement
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Authentication
+        - Authorization
+        - Input validation
+        - Dependency vulnerability
+        - Infrastructure hardening
+        - Logging/monitoring gap
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the security finding. Do not include exploit code.
+    validations:
+      required: true
+
+  - type: textarea
+    id: recommendation
+    attributes:
+      label: Recommendation
+      description: How should this be addressed?

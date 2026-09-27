@@ -1,0 +1,10 @@
+agent_id: "00000000-0000-0000-0000-000000000001"
+agent_type: itsm-resolver
+tier: T1
+allowed_actions:
+  - rag_search
+  - ticket_create
+  - session.read
+token_ttl_seconds: 3600
+max_budget_usd: 5.0
+tenant_id: null

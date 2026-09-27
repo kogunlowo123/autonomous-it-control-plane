@@ -1,0 +1,17 @@
+# Global owner
+* @kogunlowo123
+
+# Infrastructure changes require owner review
+/infra/ @kogunlowo123
+/deploy/ @kogunlowo123
+
+# Security changes require security review
+/security/ @kogunlowo123
+/identity/ @kogunlowo123
+
+# CI/CD and automation
+/.github/ @kogunlowo123
+
+# Core services
+/services/ @kogunlowo123
+/platform/ @kogunlowo123

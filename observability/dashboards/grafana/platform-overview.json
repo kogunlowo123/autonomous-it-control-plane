@@ -1,0 +1,83 @@
+{
+  "title": "IT Control Plane — Platform Overview",
+  "uid": "itsm-platform-overview",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Active Incidents",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "count(itsm_incidents_total{status='open'})",
+          "legendFormat": "Open Incidents"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Change Requests — Pending Approval",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "count(itsm_changes_total{status='pending_approval'})",
+          "legendFormat": "Pending Approvals"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Agent Resolutions — Last 24h",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "rate(itsm_incidents_resolved_total[5m])",
+          "legendFormat": "Resolutions/s"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Average Confidence Score",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.7 },
+              { "color": "green", "value": 0.85 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "avg(itsm_resolution_confidence)",
+          "legendFormat": "Confidence"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "P99 API Latency",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job='itsm-api'}[5m]))",
+          "legendFormat": "p99"
+        }
+      ]
+    }
+  ]
+}

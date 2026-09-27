@@ -1,0 +1,49 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: itsm-pii-scrub-collector
+  namespace: itsm-system
+spec:
+  mode: sidecar
+  image: otel/opentelemetry-collector-contrib:0.97.0
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+
+    processors:
+      transform/scrub_pii:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              # Redact email addresses from span attributes
+              - replace_pattern(attributes["user.email"], "([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+)", "[EMAIL_REDACTED]")
+              # Redact IP addresses
+              - replace_pattern(attributes["net.peer.ip"], "(\\d{1,3}\\.){3}\\d{1,3}", "[IP_REDACTED]")
+              # Redact JWT tokens from URLs
+              - replace_pattern(attributes["http.url"], "(Bearer\\s+)[A-Za-z0-9\\-._~+/]+=*", "$1[TOKEN_REDACTED]")
+        log_statements:
+          - context: log
+            statements:
+              - replace_pattern(body, "([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+)", "[EMAIL_REDACTED]")
+              - replace_pattern(body, "(password|secret|token|key)\\s*=\\s*\\S+", "$1=[REDACTED]")
+
+    exporters:
+      otlp:
+        endpoint: http://itsm-otel-collector:4317
+        tls:
+          insecure: true
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [transform/scrub_pii]
+          exporters: [otlp]
+        logs:
+          receivers: [otlp]
+          processors: [transform/scrub_pii]
+          exporters: [otlp]

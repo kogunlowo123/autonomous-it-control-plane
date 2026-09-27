@@ -1,0 +1,64 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged-containers
+  annotations:
+    policies.kyverno.io/title: Disallow Privileged Containers
+    policies.kyverno.io/category: Pod Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/description: >
+      Privileged containers have full host access and bypass most security controls.
+      This policy prevents any container from running as privileged in itsm-system.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: disallow-privileged
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - itsm-system
+      validate:
+        message: "Privileged containers are not allowed in itsm-system."
+        pattern:
+          spec:
+            containers:
+              - =(securityContext):
+                  =(privileged): "false"
+            initContainers:
+              - =(securityContext):
+                  =(privileged): "false"
+
+    - name: require-non-root
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - itsm-system
+      validate:
+        message: "Containers must not run as root. Set runAsNonRoot: true."
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true
+
+    - name: disallow-host-namespaces
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - itsm-system
+      validate:
+        message: "Host namespaces (hostPID, hostIPC, hostNetwork) are not allowed."
+        pattern:
+          spec:
+            =(hostPID): "false"
+            =(hostIPC): "false"
+            =(hostNetwork): "false"

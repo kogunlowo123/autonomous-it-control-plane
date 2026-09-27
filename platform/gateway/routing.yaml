@@ -1,0 +1,20 @@
+routes:
+  - path: "/v1/chat/completions"
+    provider: bedrock
+    model_override: null  # use default from config
+    allowed_tiers: [T1, T2, T3]
+
+  - path: "/v1/embeddings"
+    provider: bedrock
+    model_override: amazon.titan-embed-text-v2:0
+    allowed_tiers: [T1, T2, T3]
+
+fallback_routes:
+  - from_provider: bedrock
+    to_provider: bedrock
+    model_override: anthropic.claude-3-haiku-20240307-v1:0
+    trigger: rate_limit_exceeded
+
+load_balancing:
+  strategy: round_robin
+  health_check_interval_seconds: 30

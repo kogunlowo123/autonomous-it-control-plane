@@ -1,0 +1,52 @@
+name: Docker Build and Push
+description: Builds and pushes Docker images to Amazon ECR
+
+inputs:
+  image-name:
+    description: Docker image name (without registry prefix)
+    required: true
+  dockerfile:
+    description: Path to Dockerfile
+    default: "Dockerfile"
+  context:
+    description: Docker build context
+    default: "."
+  tags:
+    description: Additional tags (comma-separated)
+    default: "latest"
+  aws-region:
+    description: AWS region for ECR
+    default: "us-east-1"
+  ecr-registry:
+    description: ECR registry URL
+    required: true
+  push:
+    description: Whether to push the image
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        region: ${{ inputs.aws-region }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v6
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.context }}/${{ inputs.dockerfile }}
+        push: ${{ inputs.push }}
+        tags: |
+          ${{ inputs.ecr-registry }}/${{ inputs.image-name }}:${{ inputs.tags }}
+          ${{ inputs.ecr-registry }}/${{ inputs.image-name }}:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64

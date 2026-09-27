@@ -1,0 +1,13 @@
+apiVersion: v2
+name: autonomous-it-control-plane
+description: Umbrella chart for all Autonomous IT Control Plane services
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: api
+    version: "0.1.0"
+    repository: "file://../api"
+  - name: agent-runtime
+    version: "0.1.0"
+    repository: "file://../agent-runtime"

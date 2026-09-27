@@ -1,0 +1,50 @@
+{
+  "title": "IT Control Plane — Cost by Tenant",
+  "uid": "itsm-cost-by-tenant",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5m",
+  "time": { "from": "now-30d", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "LLM Token Usage by Tenant",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum by (tenant_id) (itsm_llm_tokens_total)",
+          "legendFormat": "{{tenant_id}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Estimated LLM Cost (USD) by Tenant",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum by (tenant_id) (itsm_llm_cost_usd_total)",
+          "legendFormat": "{{tenant_id}}",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        { "id": "organize", "options": { "renameByName": { "tenant_id": "Tenant", "Value": "Total Cost (USD)" } } }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Agent Invocations by Tenant",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(itsm_agent_invocations_total[1h]) by (tenant_id)",
+          "legendFormat": "{{tenant_id}}"
+        }
+      ]
+    }
+  ]
+}

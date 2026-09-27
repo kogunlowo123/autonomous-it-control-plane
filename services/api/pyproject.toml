@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "autonomous-it-api"
+version = "0.1.0"
+description = "Autonomous IT Control Plane API Service"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "boto3>=1.34.0",
+    "botocore>=1.34.0",
+    "psycopg2-binary>=2.9.9",
+    "PyJWT>=2.8.0",
+    "cryptography>=42.0.0",
+    "opentelemetry-sdk>=1.24.0",
+    "opentelemetry-instrumentation-fastapi>=0.45b0",
+    "opentelemetry-exporter-otlp>=1.24.0",
+    "httpx>=0.27.0",
+    "python-multipart>=0.0.9",
+    "slowapi>=0.1.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.27.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "types-psycopg2>=2.9.21",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/api"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["N818"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

@@ -1,0 +1,39 @@
+replicaCount: 1
+
+image:
+  repository: ""  # set to your ECR URI
+  pullPolicy: IfNotPresent
+  tag: "0.1.0"
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2000m"
+    memory: "4Gi"
+
+serviceAccount:
+  create: true
+  annotations: {}  # add eks.amazonaws.com/role-arn for IRSA
+
+env:
+  LOG_LEVEL: info
+  AWS_REGION: us-east-1
+
+secretRefs:
+  - name: agent-runtime-secrets
+    keys:
+      - DATABASE_URL
+      - INCIDENT_QUEUE_URL
+      - CHANGE_EVENTS_QUEUE_URL
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]

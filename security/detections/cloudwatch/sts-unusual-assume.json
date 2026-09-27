@@ -1,0 +1,33 @@
+{
+  "source": ["aws.cloudtrail"],
+  "detail-type": ["AWS API Call via CloudTrail"],
+  "detail": {
+    "eventSource": ["sts.amazonaws.com"],
+    "eventName": ["AssumeRole"],
+    "requestParameters": {
+      "roleArn": [{"prefix": "arn:aws:iam::"}]
+    }
+  },
+  "EventPattern": {
+    "description": "Detect unusual STS AssumeRole calls outside expected service accounts",
+    "severity": "HIGH",
+    "conditions": {
+      "and": [
+        {
+          "field": "detail.userIdentity.type",
+          "not_equals": "AssumedRole"
+        },
+        {
+          "field": "detail.requestParameters.roleArn",
+          "suffix": ":role/itsm-"
+        }
+      ]
+    }
+  },
+  "Targets": [
+    {
+      "Arn": {"Fn::GetAtt": ["SecurityAlertTopic", "Arn"]},
+      "Id": "sts-unusual-assume-target"
+    }
+  ]
+}

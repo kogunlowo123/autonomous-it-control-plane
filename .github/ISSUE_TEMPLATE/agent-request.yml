@@ -1,0 +1,68 @@
+name: Agent Request
+description: Request a new agent capability or agent type
+labels: ["enhancement", "agent"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Request a new agent or enhancement to an existing agent.
+
+  - type: dropdown
+    id: agent-type
+    attributes:
+      label: Agent Type
+      options:
+        - New agent
+        - Enhancement to itsm-resolver
+        - Enhancement to change-executor
+        - Enhancement to incident-manager
+        - New tool for existing agent
+    validations:
+      required: true
+
+  - type: input
+    id: agent-name
+    attributes:
+      label: Proposed Agent Name
+      placeholder: "e.g., capacity-planner, security-responder"
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe the IT operations scenario this agent addresses
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Required Approval Tier
+      options:
+        - T1 (Autonomous - no approval needed)
+        - T2 (Human approval required)
+        - T3 (Emergency - expedited approval)
+    validations:
+      required: true
+
+  - type: textarea
+    id: runbook
+    attributes:
+      label: Runbook / Knowledge Sources
+      description: What runbooks or knowledge sources should this agent use?
+
+  - type: textarea
+    id: tools
+    attributes:
+      label: Required Tools
+      description: What tools does this agent need? (e.g., SSH access, AWS APIs, ServiceNow)
+
+  - type: dropdown
+    id: escalation
+    attributes:
+      label: Escalation Behavior
+      options:
+        - Auto-escalate on failure
+        - Create ticket and stop
+        - Page on-call engineer
+        - Notify Slack channel

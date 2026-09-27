@@ -1,0 +1,38 @@
+name: Setup Python with uv
+description: Sets up Python 3.12 with uv package manager and installs dependencies
+
+inputs:
+  working-directory:
+    description: Directory containing pyproject.toml
+    default: "."
+  install-groups:
+    description: Dependency groups to install
+    default: "--all-groups"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "0.4.x"
+        enable-cache: true
+        cache-dependency-glob: "**/pyproject.toml"
+
+    - name: Sync dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: uv sync ${{ inputs.install-groups }}
+
+    - name: Cache .venv
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.working-directory }}/.venv
+        key: venv-${{ runner.os }}-${{ hashFiles(format('{0}/pyproject.toml', inputs.working-directory)) }}
+        restore-keys: |
+          venv-${{ runner.os }}-
