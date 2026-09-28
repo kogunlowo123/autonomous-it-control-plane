@@ -4,6 +4,11 @@ from __future__ import annotations
 import logging
 import re
 
+try:
+    import litellm
+except ImportError:  # pragma: no cover
+    litellm = None  # type: ignore[assignment]
+
 from agent_runtime.settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -21,7 +26,8 @@ def plan_change_execution(
     Returns (execution_steps, rollback_steps).
     """
     try:
-        import litellm
+        if litellm is None:
+            raise ImportError("litellm not available")
 
         prompt = (
             "You are an IT change management expert. Generate a detailed execution plan and rollback plan.\n\n"
