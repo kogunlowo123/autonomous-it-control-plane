@@ -1,4 +1,4 @@
-FROM python:3.12-slim AS builder
+FROM python:3.15-slim AS builder
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY src/ src/
 RUN uv sync --no-dev
 
 
-FROM python:3.12-slim AS runtime
+FROM python:3.15-slim AS runtime
 
 RUN groupadd -r nonroot && useradd -r -g nonroot nonroot
 
